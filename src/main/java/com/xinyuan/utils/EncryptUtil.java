@@ -16,10 +16,10 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 
-import sun.misc.BASE64Decoder;
-import sun.misc.BASE64Encoder;
 
 public class EncryptUtil {
+
+    private static final String DesAlgorithm = "DES";
 
     /**
      * md5加密
@@ -32,6 +32,7 @@ public class EncryptUtil {
      * md5加密
      */
     public static String md5(byte[] data) {
+
         return DigestUtils.md5Hex(data);
     }
 
@@ -39,6 +40,7 @@ public class EncryptUtil {
      * sha1加密40位
      */
     public static String sha1(String data) {
+
         return DigestUtils.sha1Hex(data);
     }
 
@@ -56,17 +58,63 @@ public class EncryptUtil {
         }
         return result;
     }
-    
+
+
+
     /**
      * 对图片进行base64加密 并返回加密字符串
+     * @param imgPath
+     * @return data
+     */
+    public static String base64ImgEncode(String imgPath){
+        byte[] data = null;
+        // 读取图片字节数组
+        try {
+            InputStream in = new FileInputStream(imgPath);
+            data = new byte[in.available()];
+            in.read(data);
+            in.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        // 对字节数组Base64编码
+        byte[] en = Base64.encodeBase64(data);
+        return new String(en);//返回Base64编码过的字节数组字符串
+    }
+
+
+    /**
+     * @Descriptionmap 对字节数组字符串进行Base64解码并生成图片
+     * @author temdy
+     * @Date 2015-01-26
+     * @param base64Str 图片Base64数据
+     * @param path 图片路径
      * @return
      */
-    public static String base64ImgEncode(byte[] data){
-        //对字节数组Base64编码
-        BASE64Encoder encoder = new BASE64Encoder();
-        return encoder.encode(data);//返回Base64编码过的字节数组字符串
+    public static boolean base64ImgDecode(String base64Str, String path){
+        if (base64Str == null){ // 图像数据为空
+            return false;
+        }
+        try {
+            // Base64解码
+            byte[] bytes = Base64.decodeBase64(base64Str.getBytes());
+            for (int i = 0; i < bytes.length; ++i) {
+                if (bytes[i] < 0) {// 调整异常数据
+                    bytes[i] += 256;
+                }
+            }
+            // 生成jpeg图片
+            OutputStream out = new FileOutputStream(path);
+            out.write(bytes);
+            out.flush();
+            out.close();
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
-    
+
+
     /**
      * base64 encode
      */
@@ -82,29 +130,7 @@ public class EncryptUtil {
 
         return result;
     }
-    
-    /**
-     * 对图片进行base64加密 并返回加密字符串
-     * @return
-     */
-    public static String base64ImgEncode(String file){
-        InputStream in = null;
-        byte[] data = null;
-        try 
-        {
-            in = new FileInputStream(file);        
-            data = new byte[in.available()];
-            in.read(data);
-            in.close();
-        } 
-        catch (IOException e) 
-        {
-            e.printStackTrace();
-        }
-        //对字节数组Base64编码
-      //返回Base64编码过的字节数组字符串
-        return base64ImgEncode(data);
-    }
+
     
     /**
      * 对加密后的图片进行解密
@@ -114,9 +140,8 @@ public class EncryptUtil {
     public static byte[] base64ImgDncode(String imgStr){
         if (imgStr == null) //图像数据为空
             return null;
-        BASE64Decoder decoder = new BASE64Decoder();
         try{
-            byte[] data = decoder.decodeBuffer(imgStr);
+            byte[] data = Base64.decodeBase64(imgStr);
             for(int i=0;i<data.length;++i){
                 if(data[i]<0)
                 {//调整异常数据
@@ -124,14 +149,14 @@ public class EncryptUtil {
                 }
             }
             return data;
-        } 
-        catch (Exception e) 
+        }
+        catch (Exception e)
         {
         	e.printStackTrace();
             return null;
         }
-    }    
-    
+    }
+
     /**
      * 对加密后的图片进行解密
      * @param imgStr	加密后的图片字符串
@@ -178,7 +203,7 @@ public class EncryptUtil {
         return new String(result);
     }
 
-    private static final String DesAlgorithm = "DES";
+
     private static Cipher initDesCipher(byte[] key, int mode) throws Exception {
         /** 创建一个密钥工厂，然后用它把DESKeySpec转换成SecretKey对象**/
         SecretKeyFactory factory = SecretKeyFactory.getInstance(DesAlgorithm);

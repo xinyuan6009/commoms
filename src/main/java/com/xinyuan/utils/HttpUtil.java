@@ -50,8 +50,8 @@ public class HttpUtil {
 	//设置请求和传输超时时间
     public static final RequestConfig DefaultRequestConfig
     		= RequestConfig.custom()
-    		  .setSocketTimeout(10000)
-    		  .setConnectTimeout(10000)
+    		  .setSocketTimeout(500)
+    		  .setConnectTimeout(500)
     		//  .setConnectionRequestTimeout(1)
      		  .build();
 
@@ -95,7 +95,15 @@ public class HttpUtil {
     	return readBytes(bytes, charset);
     }
 
-    public static String delete(String url) { return delete(url, UTF8); }
+	/**
+	 * 发送delete请求
+	 * @param url
+	 * @return
+     */
+    public static String delete(String url) {
+		return delete(url, UTF8);
+	}
+
     /**
      * 发送 delete 请求
      */
@@ -108,11 +116,19 @@ public class HttpUtil {
      * 下载二进制文件
      */
     public static byte[] download(String url, String charset) {
-    	return request(GET, url, "", charset);
+
+		return request(GET, url, "", charset);
     }
 
+	/**
+	 * 发送请求
+	 * @param method
+	 * @param url
+     * @return
+     */
     public static byte[] request(int method, String url) {
-    	return request(0, makeRequest(method, url));
+
+		return request(0, makeRequest(method, url));
     }
 
     public static byte[] request(int method, String url, String data, String charset) {
@@ -148,16 +164,14 @@ public class HttpUtil {
 		}
     	catch (Exception ex) {
 			ex.printStackTrace();
-			log.info("http异常："+ex.getMessage()
-					);
+			log.info("http异常："+ex.getMessage());
 		}
     	finally {
         	try {
         		if (response != null) {response.close();}
         		request.abort();
         		client.close();
-    		}
-        	catch (Exception ex) {
+    		} catch (Exception ex) {
     			ex.printStackTrace();
     			log.info("finally Exception", ex);
     		}
